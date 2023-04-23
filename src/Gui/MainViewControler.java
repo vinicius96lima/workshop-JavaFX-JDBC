@@ -15,6 +15,7 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.VBox;
+import model.services.DepartmentService;
 
 public class MainViewControler implements Initializable{
 	
@@ -34,7 +35,7 @@ public class MainViewControler implements Initializable{
 	
 	@FXML
 	public void onMenuDepartment() {
-		loadView("/gui/DepartmentList.fxml");
+		loadView2("/gui/DepartmentList.fxml");
 	}
 	
 	@FXML
@@ -42,9 +43,6 @@ public class MainViewControler implements Initializable{
 		loadView("/gui/About.fxml");
 	}
 	
-	
-
-
 	@Override
 	public void initialize(URL url, ResourceBundle rb) {
 	}
@@ -62,6 +60,30 @@ public class MainViewControler implements Initializable{
 			mainVBox.getChildren().clear();
 			mainVBox.getChildren().add(mainMenu);
 			mainVBox.getChildren().addAll(newVBox.getChildren());
+			
+		}
+		catch(IOException e) {
+			alert.showAlert("IO Exception", "Error loading view", e.getMessage(), AlertType.ERROR);
+		}
+	}
+	
+	private synchronized void loadView2(String absoluteName) {
+		try {
+			FXMLLoader loader = new FXMLLoader(getClass().getResource(absoluteName));
+			VBox newVBox = loader.load();
+			
+			
+			Scene mainScene = Main.getScene();
+			VBox mainVBox = (VBox)((ScrollPane)mainScene.getRoot()).getContent(); //Acessando o conteudo do ScrollPane
+			
+			Node mainMenu = mainVBox.getChildren().get(0); //Acessando meu mainMenu no vBox
+			mainVBox.getChildren().clear();
+			mainVBox.getChildren().add(mainMenu);
+			mainVBox.getChildren().addAll(newVBox.getChildren());
+			
+			DepartmentListControler controler = loader.getController();
+			controler.setDepartmentService(new DepartmentService());
+			controler.updatetableView();
 			
 		}
 		catch(IOException e) {

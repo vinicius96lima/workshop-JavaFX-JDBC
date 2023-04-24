@@ -5,6 +5,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import Gui.listeners.DataChangeListener;
 import Gui.util.Utils;
 import application.Main;
 import javafx.collections.FXCollections;
@@ -23,7 +24,7 @@ import javafx.stage.Stage;
 import model.entities.Department;
 import model.services.DepartmentService;
 
-public class DepartmentListControler implements Initializable {
+public class DepartmentListControler implements Initializable, DataChangeListener {
 	
 	private DepartmentService service;
 	
@@ -86,6 +87,7 @@ public class DepartmentListControler implements Initializable {
 			DepartmentFormController controler = loader.getController();
 			controler.setDepartment(obj);
 			controler.setDepartmentService(new DepartmentService());
+			controler.subsCribeDataChangeListener(this);
 			controler.updateFormData();
 	
 			Stage dialogStage = new Stage();
@@ -99,6 +101,11 @@ public class DepartmentListControler implements Initializable {
 		catch (IOException e) {
 			e.getMessage();
 		}
+	}
+	
+	@Override
+	public void onDataChanged() {
+		updateTableView();
 	}
 
 }

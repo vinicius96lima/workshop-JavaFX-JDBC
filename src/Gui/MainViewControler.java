@@ -3,6 +3,7 @@ package Gui;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.function.Consumer;
 
 import Gui.util.alert;
 import application.Main;
@@ -35,19 +36,22 @@ public class MainViewControler implements Initializable{
 	
 	@FXML
 	public void onMenuDepartment() {
-		loadView2("/gui/DepartmentList.fxml");
+		loadView("/gui/DepartmentList.fxml", (DepartmentListControler controler) -> { 
+			controler.setDepartmentService(new DepartmentService());
+			controler.updateTableView();
+		});
 	}
 	
 	@FXML
 	public void onMenuAbout() {
-		loadView("/gui/About.fxml");
+		loadView("/gui/About.fxml", x -> {});
 	}
 	
 	@Override
 	public void initialize(URL url, ResourceBundle rb) {
 	}
 	
-	private synchronized void loadView(String absoluteName) {
+	private synchronized <T> void loadView(String absoluteName, Consumer<T> initializingAction) {
 		try {
 			FXMLLoader loader = new FXMLLoader(getClass().getResource(absoluteName));
 			VBox newVBox = loader.load();
@@ -61,29 +65,8 @@ public class MainViewControler implements Initializable{
 			mainVBox.getChildren().add(mainMenu);
 			mainVBox.getChildren().addAll(newVBox.getChildren());
 			
-		}
-		catch(IOException e) {
-			alert.showAlert("IO Exception", "Error loading view", e.getMessage(), AlertType.ERROR);
-		}
-	}
-	
-	private synchronized void loadView2(String absoluteName) {
-		try {
-			FXMLLoader loader = new FXMLLoader(getClass().getResource(absoluteName));
-			VBox newVBox = loader.load();
-			
-			
-			Scene mainScene = Main.getScene();
-			VBox mainVBox = (VBox)((ScrollPane)mainScene.getRoot()).getContent(); //Acessando o conteudo do ScrollPane
-			
-			Node mainMenu = mainVBox.getChildren().get(0); //Acessando meu mainMenu no vBox
-			mainVBox.getChildren().clear();
-			mainVBox.getChildren().add(mainMenu);
-			mainVBox.getChildren().addAll(newVBox.getChildren());
-			
-			DepartmentListControler controler = loader.getController();
-			controler.setDepartmentService(new DepartmentService());
-			controler.updatetableView();
+			T controler = loader.getController();
+			initializingAction.accept(controler);
 			
 		}
 		catch(IOException e) {

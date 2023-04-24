@@ -37,7 +37,6 @@ public class DepartmentListControler implements Initializable {
 	
 	private ObservableList<Department> obsList;
 	
-	
 	@FXML
 	public void onBtNewAction() {
 		System.out.println("Funcionou");
@@ -62,7 +61,7 @@ public class DepartmentListControler implements Initializable {
 		this.service = service;
 	}
 	
-	public void updatetableView() {
+	public void updateTableView() {
 		if (service == null) {
 			throw new IllegalStateException("Service was null!");
 		}

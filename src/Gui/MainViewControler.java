@@ -35,6 +35,10 @@ public class MainViewControler implements Initializable{
 	}
 	
 	@FXML
+	URL url = getClass().getResource("path/to/your/file.fxml");
+	FXMLLoader loader = new FXMLLoader(url);
+	
+	@FXML
 	public void onMenuDepartment() {
 		loadView("/gui/DepartmentList.fxml", (DepartmentListControler controler) -> { 
 			controler.setDepartmentService(new DepartmentService());

@@ -1,0 +1,5 @@
+user=root
+password=123456789
+dburl=jdbc:mysql://localhost:3306/course_jdbc
+useTimezone=true&serverTimezone=UTC
+useSSL=false

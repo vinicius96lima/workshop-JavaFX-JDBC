@@ -1,9 +1,11 @@
 package Gui;
 
 import java.net.URL;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -55,6 +57,12 @@ public class SellerFormController implements Initializable {
 	public void subsCribeDataChangeListener(DataChangeListener listener) {
 		dataChangeListeners.add(listener);
 	}
+	
+	private void notifyDataChangeListeners() {
+		for (DataChangeListener listener : dataChangeListeners) {
+			listener.onDataChanged();
+		}
+	}
 
 	@FXML
 	private TextField txtId;
@@ -93,6 +101,25 @@ public class SellerFormController implements Initializable {
 	private ComboBox<Department> cbDepartment;
 
 	private ObservableList<Department> obsList;
+	
+	@FXML
+	public void onBtCancelAction(ActionEvent event) {
+		Utils.currentStage(event).close();
+	}
+
+	@Override
+	public void initialize(URL url, ResourceBundle rb) {
+		initializeNodes();
+	}
+
+	private void initializeNodes() {
+		Constraints.setTextFieldInteger(txtId);
+		Constraints.setTextFieldMaxLength(txtName, 40);
+		Constraints.setTextFieldDouble(txtBaseSalary);
+		Constraints.setTextFieldMaxLength(txtEmail, 60);
+		Utils.formatDatePicker(dpBirthDate, "dd/MM/yyyy");
+		initializeComboBoxDepartment();
+	}
 
 	@FXML
 	public void onBtSaveAction(ActionEvent event) {
@@ -114,52 +141,6 @@ public class SellerFormController implements Initializable {
 		}
 	}
 
-	private void notifyDataChangeListeners() {
-		for (DataChangeListener listener : dataChangeListeners) {
-			listener.onDataChanged();
-		}
-
-	}
-
-	private Seller getFormData() {
-
-		Seller obj = new Seller();
-
-		ValidationException exception = new ValidationException("Validation error");
-
-		obj.setId(Utils.tryParseToInt(txtId.getText()));
-
-		if (txtName.getText() == null || txtName.getText().trim().equals("")) {
-			exception.addError("name", "Field can't be empty");
-		}
-		obj.setName(txtName.getText());
-
-		if (exception.getErrors().size() > 0) {
-			throw exception;
-		}
-		return obj;
-	}
-
-	@FXML
-	public void onBtCancelAction(ActionEvent event) {
-		Utils.currentStage(event).close();
-	}
-
-	@Override
-	public void initialize(URL url, ResourceBundle rb) {
-		initializeNodes();
-
-	}
-
-	private void initializeNodes() {
-		Constraints.setTextFieldInteger(txtId);
-		Constraints.setTextFieldMaxLength(txtName, 40);
-		Constraints.setTextFieldDouble(txtBaseSalary);
-		Constraints.setTextFieldMaxLength(txtEmail, 60);
-		Utils.formatDatePicker(dpBirthDate, "dd/MM/yyyy");
-		initializeComboBoxDepartment();
-	}
-
 	public void updateFormData() {
 		if (entity == null) {
 			throw new IllegalStateException("Entity was null");
@@ -169,6 +150,7 @@ public class SellerFormController implements Initializable {
 		txtEmail.setText(entity.getEmail());
 		Locale.setDefault(Locale.US);
 		txtBaseSalary.setText(String.format("%.2f", entity.getBaseSalary()));
+		
 		if (entity.getBirthDate() != null) {
 			dpBirthDate.setValue(LocalDate.ofInstant(entity.getBirthDate().toInstant(), ZoneId.systemDefault()));
 		}
@@ -188,13 +170,53 @@ public class SellerFormController implements Initializable {
 		obsList = FXCollections.observableArrayList(list);
 		cbDepartment.setItems(obsList);
 	}
+	
+	private Seller getFormData() {
+
+		Seller obj = new Seller();
+
+		ValidationException exception = new ValidationException("Validation error");
+
+		obj.setId(Utils.tryParseToInt(txtId.getText()));
+
+		if (txtName.getText() == null || txtName.getText().trim().equals("")) {
+			exception.addError("name", "Field can't be empty");
+		}
+		obj.setName(txtName.getText());
+		
+		if (txtEmail.getText() == null || txtEmail.getText().trim().equals("")) {
+			exception.addError("email", "Field can't be empty");
+		}
+		obj.setEmail(txtEmail.getText());
+		
+		if(dpBirthDate.getValue() == null) {
+			exception.addError("birthDate", "Field can't be empty");
+		}
+		else{
+			Instant instant = Instant.from(dpBirthDate.getValue().atStartOfDay(ZoneId.systemDefault()));
+			obj.setBirthDate(Date.from(instant));
+		}
+		
+		obj.setDepartment(cbDepartment.getValue());
+		
+		if (txtBaseSalary.getText() == null || txtBaseSalary.getText().trim().equals("")) {
+			exception.addError("baseSalary", "Field can't be empty");
+		}
+		obj.setBaseSalary(Utils.tryParseToDouble(txtBaseSalary.getText()));
+		
+		if (exception.getErrors().size() > 0) {
+			throw exception;
+		}
+		return obj;
+	}
 
 	private void setErrorMessages(Map<String, String> errors) {
 		Set<String> fields = errors.keySet();
 
-		if (fields.contains("name")) {
-			labelErrorName.setText(errors.get("name"));
-		}
+		labelErrorName.setText(fields.contains("name") ? errors.get("name") : "");
+		labelErrorEmail.setText(fields.contains("email") ? errors.get("email") : "");
+		labelErrorBirthDate.setText(fields.contains("birthDate") ? errors.get("birthDate") : "");
+		labelErrorBaseSalary.setText(fields.contains("baseSalary") ? errors.get("baseSalary") : "");
 	}
 
 	private void initializeComboBoxDepartment() {
@@ -208,5 +230,4 @@ public class SellerFormController implements Initializable {
 		cbDepartment.setCellFactory(factory);
 		cbDepartment.setButtonCell(factory.call(null));
 	}
-
 }

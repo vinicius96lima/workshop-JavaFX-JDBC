@@ -30,6 +30,7 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import model.entities.Seller;
+import model.services.DepartmentService;
 import model.services.SellerService;
 
 public class SellerListControler implements Initializable, DataChangeListener {
@@ -117,7 +118,8 @@ public class SellerListControler implements Initializable, DataChangeListener {
 
 			SellerFormController controler = loader.getController();
 			controler.setSeller(obj);
-			controler.setSellerService(new SellerService());
+			controler.setServices(new SellerService(), new DepartmentService());
+			controler.loadAssociateObjects();
 			controler.subsCribeDataChangeListener(this);
 			controler.updateFormData();
 
@@ -129,7 +131,8 @@ public class SellerListControler implements Initializable, DataChangeListener {
 			dialogStage.initModality(Modality.WINDOW_MODAL);// nao deixa acessar a janela anterior sem fecha-la.
 			dialogStage.showAndWait();
 		} catch (IOException e) {
-			e.getMessage();
+			e.printStackTrace();
+			Alerts.showAlert("IO Exception", "Error loading view" ,e.getMessage(), AlertType.ERROR);
 		}
 	}
 
